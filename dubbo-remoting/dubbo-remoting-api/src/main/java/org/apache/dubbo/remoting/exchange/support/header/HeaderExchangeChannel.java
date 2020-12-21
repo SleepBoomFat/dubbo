@@ -128,10 +128,11 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         // create request.
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
-        req.setTwoWay(true);
+        req.setTwoWay(true);//需要响应
         req.setData(request);
         DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
+            //transport层，netty
             channel.send(req);
         } catch (RemotingException e) {
             future.cancel();

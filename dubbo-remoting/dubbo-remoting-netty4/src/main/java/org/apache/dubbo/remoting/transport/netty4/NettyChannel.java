@@ -154,11 +154,14 @@ final class NettyChannel extends AbstractChannel {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         // whether the channel is closed
+
+        //netty执行步骤 transport层
         super.send(message, sent);
 
         boolean success = true;
         int timeout = 0;
         try {
+            //获取结果
             ChannelFuture future = channel.writeAndFlush(message);
             if (sent) {
                 // wait timeout ms

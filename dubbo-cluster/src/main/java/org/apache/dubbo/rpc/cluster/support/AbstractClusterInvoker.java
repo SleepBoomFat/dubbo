@@ -250,6 +250,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     @Override
+    //方法执行
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
 
@@ -258,8 +259,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (contextAttachments != null && contextAttachments.size() != 0) {
             ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
-
+        //所有的机器
         List<Invoker<T>> invokers = list(invocation);
+        //查找loadbalance策略
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
@@ -310,6 +312,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
+            //spi
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE));
         } else {

@@ -301,7 +301,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
         serviceMetadata.getAttachments().putAll(map);
-
+        //创建代理
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
@@ -320,6 +320,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
+        //判断是否走本地调用
         if (shouldJvmRefer(map)) {
             URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
@@ -396,6 +397,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         MetadataUtils.publishServiceDefinition(consumerURL);
 
         // create service proxy
+        //创建代理
         return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 
@@ -486,6 +488,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * call, which is the default behavior
      */
     protected boolean shouldJvmRefer(Map<String, String> map) {
+        //如果是本地调用 封装本地请求参数
         URL tmpUrl = new URL("temp", "localhost", 0, map);
         boolean isJvmRefer;
         if (isInjvm() == null) {

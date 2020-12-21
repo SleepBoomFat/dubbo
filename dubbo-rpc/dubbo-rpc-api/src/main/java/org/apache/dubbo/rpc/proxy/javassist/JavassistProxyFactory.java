@@ -31,6 +31,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
 
     @Override
     @SuppressWarnings("unchecked")
+    //默认使用此
     public <T> T getProxy(Invoker<T> invoker, Class<?>[] interfaces) {
         return (T) Proxy.getProxy(interfaces).newInstance(new InvokerInvocationHandler(invoker));
     }
@@ -44,6 +45,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
             protected Object doInvoke(T proxy, String methodName,
                                       Class<?>[] parameterTypes,
                                       Object[] arguments) throws Throwable {
+                //
                 return wrapper.invokeMethod(proxy, methodName, parameterTypes, arguments);
             }
         };

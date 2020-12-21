@@ -49,7 +49,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
-
+    /**
+     * futrues集合，key:请求编号
+     */
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
@@ -57,7 +59,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             30,
             TimeUnit.MILLISECONDS);
 
-    // invoke id.
+    // invoke id. 每个请求的id
     private final Long id;
     private final Channel channel;
     private final Request request;
@@ -82,6 +84,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.id = request.getId();
         this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         // put into waiting map.
+        //将id与 future 和channel绑定
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
     }
@@ -108,6 +111,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
         // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
+        //！！！！异步转同步
         if (executor instanceof ThreadlessExecutor) {
             ((ThreadlessExecutor) executor).setWaitingFuture(future);
         }
@@ -162,7 +166,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static void received(Channel channel, Response response) {
         received(channel, response, false);
     }
-
+    //有了响应结果或者超时后，就移除map中的future
     public static void received(Channel channel, Response response, boolean timeout) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
@@ -205,6 +209,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             throw new IllegalStateException("response cannot be null");
         }
         if (res.getStatus() == Response.OK) {
+            //如果得到了结果
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
@@ -287,7 +292,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 notifyTimeout(future);
             }
         }
-
+        //处理超时
         private void notifyTimeout(DefaultFuture future) {
             // create exception response.
             Response timeoutResponse = new Response(future.getId());

@@ -126,7 +126,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     /**
      * If the calling thread is still waiting for a callback task, add the task into the blocking queue to wait for schedule.
      * Otherwise, submit to shared callback executor directly.
-     *
+     *  这个线程池就是处理异步转同步，加锁处理
      * @param runnable
      */
     @Override
